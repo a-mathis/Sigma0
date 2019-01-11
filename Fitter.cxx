@@ -2,6 +2,7 @@
 #include "TDatabasePDG.h"
 #include "TFitResult.h"
 #include "TFitResultPtr.h"
+#include "TMath.h"
 
 Fitter::Fitter()
     : fSpectrum(nullptr),
