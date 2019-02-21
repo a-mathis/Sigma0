@@ -1,7 +1,7 @@
 #include "FileReader.h"
 
 TH2F* FileReader::GetHist2D(TString filename, TString appendix,
-                            std::vector<TString> path, TString histname) {
+                            std::vector<TString> path, TString histname, TString prefix) {
   auto file = TFile::Open(filename);
   if (!file) {
     std::cerr << "ERROR FileReader: File does not exist\n";
@@ -14,7 +14,9 @@ TH2F* FileReader::GetHist2D(TString filename, TString appendix,
     file->Close();
     return nullptr;
   }
-  name = "histo_" + appendix;
+  name = prefix;
+  name += "_";
+  name += appendix;
   auto histoList = (TList*)dir->Get(name);
   TList* results = histoList;
   for (const auto& it : path) {
@@ -37,7 +39,7 @@ TH2F* FileReader::GetHist2D(TString filename, TString appendix,
 }
 
 TH1F* FileReader::GetHist1D(TString filename, TString appendix,
-                            std::vector<TString> path, TString histname) {
+                            std::vector<TString> path, TString histname, TString prefix) {
   auto file = TFile::Open(filename);
   if (!file) {
     std::cerr << "ERROR FileReader: File does not exist\n";
@@ -50,7 +52,9 @@ TH1F* FileReader::GetHist1D(TString filename, TString appendix,
     file->Close();
     return nullptr;
   }
-  name = "histo_" + appendix;
+  name = prefix;
+  name += "_";
+  name += appendix;
   auto histoList = (TList*)dir->Get(name);
   TList* results = histoList;
   for (const auto& it : path) {
@@ -73,7 +77,7 @@ TH1F* FileReader::GetHist1D(TString filename, TString appendix,
 }
 
 TProfile* FileReader::GetProfile(TString filename, TString appendix,
-                                 std::vector<TString> path, TString histname) {
+                                 std::vector<TString> path, TString histname, TString prefix) {
   auto file = TFile::Open(filename);
   if (!file) {
     std::cerr << "ERROR FileReader: File does not exist\n";
@@ -87,7 +91,9 @@ TProfile* FileReader::GetProfile(TString filename, TString appendix,
     file->Close();
     return nullptr;
   }
-  name = "histo_" + appendix;
+  name = prefix;
+  name += "_";
+  name += appendix;
   auto histoList = (TList*)dir->Get(name);
   TList* results = histoList;
   for (const auto& it : path) {
