@@ -12,8 +12,8 @@ class Plotter {
   ~Plotter() = default;
 
   static void SetStyle(bool graypalette = false, bool title = true);
-  static void SetStyleHisto(TH1 *histo, int marker = 24, int color = kBlack);
-  static void SetStyleGraph(TGraph *graph, int marker = 24, int color = kBlack);
+  static void SetStyleHisto(TH1 *histo, int marker = 24, int color = kBlue + 3);
+  static void SetStyleGraph(TGraph *graph, int marker = 24, int color = kBlue + 3);
 
  private:
   static constexpr float fLabelSize = 0.05;   // 0.05
