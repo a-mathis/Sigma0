@@ -3,6 +3,7 @@
 #include "TFitResult.h"
 #include "TFitResultPtr.h"
 #include "TMath.h"
+#include "global.h"
 
 Fitter::Fitter()
     : fSpectrum(nullptr),
@@ -113,24 +114,28 @@ void Fitter::FitLambda() {
   fSignal->SetLineColor(kOrange + 2);
 
   // Extract signal as integral
-  //First Gaus
+  // First Gaus
   fSignalAmp = fSignal->GetParameter(0);
   fSignalAmpErr = fSignal->GetParError(0);
-  fSignalWidth = fSignal->GetParameter(2)*1000;
-  fSignalWidthErr = fSignal->GetParError(2)*1000;
+  fSignalWidth = fSignal->GetParameter(2) * 1000;
+  fSignalWidthErr = fSignal->GetParError(2) * 1000;
 
-  fSignalInt = std::sqrt(2*TMath::Pi())*fSignalAmp*fSignalWidth;
-  fSignalIntErr = fSignalInt*std::sqrt(std::pow(fSignalWidthErr/fSignalWidth,2)+std::pow(fSignalAmpErr/fSignalAmp,2));
-  //Second Gaus
+  fSignalInt = std::sqrt(2 * TMath::Pi()) * fSignalAmp * fSignalWidth;
+  fSignalIntErr =
+      fSignalInt * std::sqrt(std::pow(fSignalWidthErr / fSignalWidth, 2) +
+                             std::pow(fSignalAmpErr / fSignalAmp, 2));
+  // Second Gaus
   fSignalAmp2 = fSignal->GetParameter(3);
   fSignalAmpErr2 = fSignal->GetParError(3);
-  fSignalWidth2 = fSignal->GetParameter(5)*1000;
-  fSignalWidthErr2 = fSignal->GetParError(5)*1000;
+  fSignalWidth2 = fSignal->GetParameter(5) * 1000;
+  fSignalWidthErr2 = fSignal->GetParError(5) * 1000;
 
-  fSignalInt2 = std::sqrt(2*TMath::Pi())*fSignalAmp2*fSignalWidth2;
-  fSignalIntErr2 = fSignalInt2*std::sqrt(std::pow(fSignalWidthErr2/fSignalWidth2,2)+std::pow(fSignalAmpErr2/fSignalAmp2,2));
+  fSignalInt2 = std::sqrt(2 * TMath::Pi()) * fSignalAmp2 * fSignalWidth2;
+  fSignalIntErr2 =
+      fSignalInt2 * std::sqrt(std::pow(fSignalWidthErr2 / fSignalWidth2, 2) +
+                              std::pow(fSignalAmpErr2 / fSignalAmp2, 2));
 
-  //Combined
+  // Combined
   fSignalInt += fSignalInt2;
   fSignalIntErr += fSignalIntErr2;
 
@@ -210,7 +215,7 @@ void Fitter::FitSigma() {
       },
       1.15, 1.25, 5);
   TFitResultPtr backgroundR =
-      fSpectrum->Fit("background_noPeak", "SRQ0EM", "", 1.165, 1.22);
+      fSpectrum->Fit("background_noPeak", "SRQ0EM", "", 1.165, 1.2);
 
   // parse then to proper TF1
   TF1 *background2 = new TF1("background2", "pol4", 1.1, 1.3);
@@ -222,7 +227,7 @@ void Fitter::FitSigma() {
 
   // Parse to combined function pol4 + gaus
   TF1 *sigma_singleGauss =
-      new TF1("sigma_singleGauss", "background2 + gaus(5)", 1.1, 1.23);
+      new TF1("sigma_singleGauss", "background2 + gaus(5)", 1.1, 1.2);
   sigma_singleGauss->SetNpx(1000);
   sigma_singleGauss->FixParameter(0, background2->GetParameter(0));
   sigma_singleGauss->FixParameter(1, background2->GetParameter(1));
@@ -234,7 +239,7 @@ void Fitter::FitSigma() {
              background2->Eval(SigmaMass));
   sigma_singleGauss->FixParameter(6, SigmaMass);
   sigma_singleGauss->SetParameter(7, 0.001);
-  fSpectrum->Fit("sigma_singleGauss", "S0RQEM", "", 1.155, 1.22);
+  fSpectrum->Fit("sigma_singleGauss", "S0RQEM", "", 1.155, 1.2);
 
   // Parse to combined function pol4 + gaus with constrained sigma mass
   fTotalFit = new TF1("fTotalFit", "sigma_singleGauss", 1.1, 1.3);
@@ -242,7 +247,7 @@ void Fitter::FitSigma() {
   fTotalFit->SetParLimits(6, SigmaMass - 0.005, SigmaMass + 0.005);
   fTotalFit->SetParameter(7, 0.001);
   fTotalFit->SetLineColor(kOrange + 2);
-  TFitResultPtr fullFit = fSpectrum->Fit("fTotalFit", "SRQEM", "", 1.165, 1.22);
+  TFitResultPtr fullFit = fSpectrum->Fit("fTotalFit", "SRQEM", "", 1.165, 1.2);
 
   // Get refitted Background function
   fBackground = new TF1("fBackground_refit", "pol4(0)", 1.1, 1.3);
@@ -265,10 +270,12 @@ void Fitter::FitSigma() {
 
   fSignalAmp = fTotalFit->GetParameter(5);
   fSignalAmpErr = fTotalFit->GetParError(5);
-  fSignalWidth = fTotalFit->GetParameter(7)*1000;
-  fSignalWidthErr = fTotalFit->GetParError(7)*1000;
-  fSignalInt = std::sqrt(2*TMath::Pi())*fSignalAmp*fSignalWidth;
-  fSignalIntErr = fSignalInt*std::sqrt(std::pow(fSignalWidthErr/fSignalWidth,2)+std::pow(fSignalAmpErr/fSignalAmp,2));
+  fSignalWidth = fTotalFit->GetParameter(7) * 1000;
+  fSignalWidthErr = fTotalFit->GetParError(7) * 1000;
+  fSignalInt = std::sqrt(2 * TMath::Pi()) * fSignalAmp * fSignalWidth;
+  fSignalIntErr =
+      fSignalInt * std::sqrt(std::pow(fSignalWidthErr / fSignalWidth, 2) +
+                             std::pow(fSignalAmpErr / fSignalAmp, 2));
 
   fSignalCount = fSignal->Integral(fLowerBound, fUpperBound) /
                  double(fSpectrum->GetBinWidth(1));
@@ -291,4 +298,74 @@ void Fitter::FitSigma() {
 
   delete sigma_singleGauss;
   delete background2;
+}
+
+void Fitter::FitSigma(int pTbin) {
+  if (!fSpectrum) {
+    std::cerr << "No histogram to fit - run SetSpectrum() first \n";
+    return;
+  }
+
+  const float SigmaMass = TDatabasePDG::Instance()->GetParticle(3212)->Mass();
+
+  fLowerBound = SigmaMass - fIntegralWidth;
+  fUpperBound = SigmaMass + fIntegralWidth;
+
+  // Parse to combined function pol4 + gaus with constrained sigma mass
+  fTotalFit = new TF1("fTotalFit", "pol4(0) + gaus(5)", 1.1, 1.3);
+  fTotalFit->SetNpx(1000);
+  fTotalFit->SetParameter(0, pol4p0[pTbin]);
+  fTotalFit->SetParameter(1, pol4p1[pTbin]);
+  fTotalFit->SetParameter(2, pol4p2[pTbin]);
+  fTotalFit->SetParameter(3, pol4p3[pTbin]);
+  fTotalFit->SetParameter(4, pol4p4[pTbin]);
+  fTotalFit->SetParameter(5, fSpectrum->GetBinContent(fSpectrum->FindBin(SigmaMass)));
+  fTotalFit->SetParameter(6, SigmaMass);
+  fTotalFit->SetParameter(7, 0.003);
+  fTotalFit->SetLineColor(kOrange + 2);
+  TFitResultPtr fullFit = fSpectrum->Fit("fTotalFit", "SRQEM", "", 1.155, 1.27);
+
+  // Get refitted Background function
+  fBackground = new TF1("fBackground_refit", "pol4(0)", 1.1, 1.3);
+  fBackground->SetNpx(1000);
+  fBackground->SetParameter(0, fTotalFit->GetParameter(0));
+  fBackground->SetParameter(1, fTotalFit->GetParameter(1));
+  fBackground->SetParameter(2, fTotalFit->GetParameter(2));
+  fBackground->SetParameter(3, fTotalFit->GetParameter(3));
+  fBackground->SetParameter(4, fTotalFit->GetParameter(4));
+  fBackground->SetLineStyle(3);
+  fBackground->SetLineColor(kOrange + 2);
+  fBackground->Draw("same");
+
+  fSignal = new TF1("fSignal", "gaus(0)", 1.1, 1.3);
+  fSignal->SetParameter(0, fTotalFit->GetParameter(5));
+  fSignal->SetParameter(1, fTotalFit->GetParameter(6));
+  fSignal->SetParameter(2, fTotalFit->GetParameter(7));
+  fSignal->SetLineStyle(3);
+  fSignal->SetLineColor(kOrange + 2);
+
+  fSignalAmp = fTotalFit->GetParameter(5);
+  fSignalAmpErr = fTotalFit->GetParError(5);
+  fSignalWidth = fTotalFit->GetParameter(7) * 1000;
+  fSignalWidthErr = fTotalFit->GetParError(7) * 1000;
+  fSignalInt = std::sqrt(2 * TMath::Pi()) * fSignalAmp * fSignalWidth;
+  fSignalIntErr =
+      fSignalInt * std::sqrt(std::pow(fSignalWidthErr / fSignalWidth, 2) +
+                             std::pow(fSignalAmpErr / fSignalAmp, 2));
+
+  fSignalCount = fSignal->Integral(fLowerBound, fUpperBound) /
+                 double(fSpectrum->GetBinWidth(1));
+  fSignalCountErr =
+      fSignal->IntegralError(fLowerBound, fUpperBound, fullFit->GetParams(),
+                             fullFit->GetCovarianceMatrix().GetMatrixArray()) /
+      float(fSpectrum->GetBinWidth(1));
+
+  fBkgCount = fBackground->Integral(fLowerBound, fUpperBound) /
+              double(fSpectrum->GetBinWidth(1));
+  fBkgCountErr = 1;
+
+  fMeanSignal = fTotalFit->GetParameter(6);
+  fSigmaSignal = fTotalFit->GetParameter(7);
+  fMeanSignalErr = fTotalFit->GetParError(6);
+  fSigmaSignalErr = fTotalFit->GetParError(7);
 }

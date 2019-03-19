@@ -17,6 +17,10 @@ Spectrum::Spectrum()
       fCorrSpectrum(nullptr),
       fEfficiency(nullptr),
       fTriggerEffHist(nullptr),
+      fRecMass(nullptr),
+      fRecWidth(nullptr),
+      fMCMass(nullptr),
+      fMCWidth(nullptr),
       fAddendum(),
       fTriggerEfficiency(0.745),
       fTriggerEfficiencyErr(0.019),
@@ -35,6 +39,10 @@ Spectrum::Spectrum(TString add)
       fMCTruthCorrected(nullptr),
       fCorrSpectrum(nullptr),
       fEfficiency(nullptr),
+      fRecMass(nullptr),
+      fRecWidth(nullptr),
+      fMCMass(nullptr),
+      fMCWidth(nullptr),
       fTriggerEffHist(nullptr),
       fAddendum(add),
       fTriggerEfficiency(0.745),
@@ -51,10 +59,18 @@ void Spectrum::GetpTSpectra(bool isRec) {
     std::cerr << "ERROR Spectrum: " << output << " histogram missing!";
     return;
   }
+  TString appendix = (isRec) ? "_data" : "_MC";
   TString name = hist->GetName();
-  name += (isRec) ? "_data" : "_MC";
+  name += appendix;
   name += "_Rebinned";
   auto histSpectrum = Spectrum::GetBinnedHistogram(name);
+  if (isRec) {
+    fRecMass = Spectrum::GetBinnedHistogram("RecMass");
+    fRecWidth = Spectrum::GetBinnedHistogram("RecWidth");
+  } else {
+    fMCMass = Spectrum::GetBinnedHistogram("MCMass");
+    fMCWidth = Spectrum::GetBinnedHistogram("MCWidth");
+  }
   TString title = "; #it{p}_{T} (GeV/#it{c}); N_{";
   title += (isRec) ? "data" : "MC";
   title += "}";
@@ -81,8 +97,16 @@ void Spectrum::GetpTSpectra(bool isRec) {
     histSpectrum->SetBinError(currentBin, fit.GetSignalCountError());
     if (isRec) {
       fInvMassRec.emplace_back(histPt);
+      fRecMass->SetBinContent(currentBin, fit.GetMeanSignal());
+      fRecMass->SetBinError(currentBin, fit.GetMeanSignalErr());
+      fRecWidth->SetBinContent(currentBin, fit.GetSigmaSignal());
+      fRecWidth->SetBinError(currentBin, fit.GetSigmaSignalErr());
     } else {
       fInvMassMC.emplace_back(histPt);
+      fMCMass->SetBinContent(currentBin, fit.GetMeanSignal());
+      fMCMass->SetBinError(currentBin, fit.GetMeanSignalErr());
+      fMCWidth->SetBinContent(currentBin, fit.GetSigmaSignal());
+      fMCWidth->SetBinError(currentBin, fit.GetSigmaSignalErr());
     }
   }
   delete hist;
@@ -95,58 +119,58 @@ void Spectrum::GetpTSpectra(bool isRec) {
 }
 
 void Spectrum::ComputeCorrectedSpectrum() {
-  if (!fRecInvMassPt || !fMCInvMassPt) {
-    std::cerr << "ERROR Spectrum: Inv. mass spectrum missing!\n";
-    return;
-  }
+  //  if (!fRecInvMassPt || !fMCInvMassPt) {
+  //    std::cerr << "ERROR Spectrum: Inv. mass spectrum missing!\n";
+  //    return;
+  //  }
 
   GetpTSpectra(true);
-  GetpTSpectra(false);
+  //  GetpTSpectra(false);
 
-  if (!fRecSpectrum || !fMCSpectrum || !fMCTruth) {
-    std::cerr << "ERROR Spectrum: Spectrum missing!\n";
-    return;
-  }
-  if (fNEvents < 0) {
-    std::cerr
-        << "ERROR Spectrum: Number of events for normalization missing!\n";
-    return;
-  }
-
-  std::cout << "======================================================\n";
-  std::cout << "Normalizing the spectra with " << fNEvents << " events \n";
-  SetTriggerEfficiency();
-
-  TString name = fMCTruth->GetName();
-  name += "_BRcorrected";
-  fMCTruthCorrected = (TH1F*)fMCTruth->Clone(name);
-  fMCTruthCorrected->Scale(fBranchingRatio);
-  fMCTruthCorrected->SetTitle(
-      "; #it{p}_{T} (GeV/#it{c}); N_{MC truth} #times BR");
-  Plotter::SetStyleHisto(fMCTruthCorrected);
-
-  name = fMCSpectrum->GetName();
-  name += "_Efficiency";
-  fEfficiency = (TH1F*)fMCSpectrum->Clone(name);
-  fEfficiency->Divide(fMCTruthCorrected);
-  fEfficiency->SetTitle("; #it{p}_{T} (GeV/#it{c}); A #times #varepsilon");
-
-  name = fMCSpectrum->GetName();
-  name += "_Corrected";
-  fCorrSpectrum = (TH1F*)fRecSpectrum->Clone(name);
-  fCorrSpectrum->Divide(fEfficiency);
-
-  /// Scale according to the bin width
-  ScaleBinWidth(fCorrSpectrum);
-
-  /// Event normalization
-  fCorrSpectrum->Scale(1.f / fNEvents);
-
-  /// Trigger efficiency
-  fCorrSpectrum->Multiply(GetTriggerEfficiency());
-  fCorrSpectrum->SetTitle(
-      "; #it{p}_{T} (GeV/#it{c}); #frac{1}{N_{INEL}} #frac{d^{2} N}{dy "
-      "d#it{p}_{T}}");
+  //  if (!fRecSpectrum || !fMCSpectrum || !fMCTruth) {
+  //    std::cerr << "ERROR Spectrum: Spectrum missing!\n";
+  //    return;
+  //  }
+  //  if (fNEvents < 0) {
+  //    std::cerr
+  //        << "ERROR Spectrum: Number of events for normalization missing!\n";
+  //    return;
+  //  }
+  //
+  //  std::cout << "======================================================\n";
+  //  std::cout << "Normalizing the spectra with " << fNEvents << " events \n";
+  //  SetTriggerEfficiency();
+  //
+  //  TString name = fMCTruth->GetName();
+  //  name += "_BRcorrected";
+  //  fMCTruthCorrected = (TH1F*)fMCTruth->Clone(name);
+  //  fMCTruthCorrected->Scale(fBranchingRatio);
+  //  fMCTruthCorrected->SetTitle(
+  //      "; #it{p}_{T} (GeV/#it{c}); N_{MC truth} #times BR");
+  //  Plotter::SetStyleHisto(fMCTruthCorrected);
+  //
+  //  name = fMCSpectrum->GetName();
+  //  name += "_Efficiency";
+  //  fEfficiency = (TH1F*)fMCSpectrum->Clone(name);
+  //  fEfficiency->Divide(fMCTruthCorrected);
+  //  fEfficiency->SetTitle("; #it{p}_{T} (GeV/#it{c}); A #times #varepsilon");
+  //
+  //  name = fMCSpectrum->GetName();
+  //  name += "_Corrected";
+  //  fCorrSpectrum = (TH1F*)fRecSpectrum->Clone(name);
+  //  fCorrSpectrum->Divide(fEfficiency);
+  //
+  //  /// Scale according to the bin width
+  //  ScaleBinWidth(fCorrSpectrum);
+  //
+  //  /// Event normalization
+  //  fCorrSpectrum->Scale(1.f / fNEvents);
+  //
+  //  /// Trigger efficiency
+  //  fCorrSpectrum->Multiply(GetTriggerEfficiency());
+  //  fCorrSpectrum->SetTitle(
+  //      "; #it{p}_{T} (GeV/#it{c}); #frac{1}{N_{INEL}} #frac{d^{2} N}{dy "
+  //      "d#it{p}_{T}}");
 }
 
 void Spectrum::ScaleBinWidth(TH1F* hist) {
@@ -357,53 +381,57 @@ void Spectrum::WriteToFile() const {
     it->GetXaxis()->SetRangeUser(1.15, 1.23);
     it->Draw();
   }
+  fRecMass->Write("MeanMassRec");
+  fRecWidth->Write("SigmaMassRec");
   c->Print("Plot/rec.pdf");
 
-  auto d = new TCanvas();
-  d->Divide(3, 3);
-  padCounter = 1;
-  outfile->cd();
-  outfile->mkdir("MC");
-  outfile->cd("MC");
-  for (const auto& it : fInvMassMC) {
-    (*it).Write((*it).GetName());
-    d->cd(padCounter++);
-    it->GetXaxis()->SetRangeUser(1.15, 1.23);
-    it->Draw();
-  }
-  d->Print("Plot/mc.pdf");
+//  auto d = new TCanvas();
+//  d->Divide(3, 3);
+//  padCounter = 1;
+//  outfile->cd();
+//  outfile->mkdir("MC");
+//  outfile->cd("MC");
+//  for (const auto& it : fInvMassMC) {
+//    (*it).Write((*it).GetName());
+//    d->cd(padCounter++);
+//    it->GetXaxis()->SetRangeUser(1.15, 1.23);
+//    it->Draw();
+//  }
+//  fMCMass->Write("MeanMassMC");
+//  fMCWidth->Write("SigmaMassMC");
+//  d->Print("Plot/mc.pdf");
 
   outfile->cd();
-  GetReconstructedSpectrum()->Write("RecSpectrum");
-  GetMCSpectrum()->Write("MCSpectrum");
-  GetMCTruthCorrected()->Write("MCTruth");
-  GetEfficiency()->Write("Efficiency");
-  GetTriggerEfficiency()->Write("TriggerEfficiency");
-  GetCorrectedSpectrum()->Write("CorrectedSpectrum");
+  //  GetReconstructedSpectrum()->Write("RecSpectrum");
+  //  GetMCSpectrum()->Write("MCSpectrum");
+  //  GetMCTruthCorrected()->Write("MCTruth");
+  //  GetEfficiency()->Write("Efficiency");
+  //  GetTriggerEfficiency()->Write("TriggerEfficiency");
+  //  GetCorrectedSpectrum()->Write("CorrectedSpectrum");
 
   outfile->Write();
   outfile->Close();
 
-  auto e = new TCanvas();
-  GetReconstructedSpectrum()->Draw();
-  e->Print("Plot/recSpectrum.pdf");
-
-  auto f = new TCanvas();
-  GetMCSpectrum()->Draw();
-  f->Print("Plot/mcSpectrum.pdf");
-
-  auto g = new TCanvas();
-  g->SetLogy();
-  GetMCTruthCorrected()->Draw();
-  g->Print("Plot/mcTruthCorrected.pdf");
-
-  auto h = new TCanvas();
-  h->SetLogy();
-  GetEfficiency()->Draw();
-  h->Print("Plot/efficiency.pdf");
-
-  auto i = new TCanvas();
-  i->SetLogy();
-  GetCorrectedSpectrum()->Draw();
-  i->Print("Plot/corrSpectrum.pdf");
+  //  auto e = new TCanvas();
+  //  GetReconstructedSpectrum()->Draw();
+  //  e->Print("Plot/recSpectrum.pdf");
+  //
+  //  auto f = new TCanvas();
+  //  GetMCSpectrum()->Draw();
+  //  f->Print("Plot/mcSpectrum.pdf");
+  //
+  //  auto g = new TCanvas();
+  //  g->SetLogy();
+  //  GetMCTruthCorrected()->Draw();
+  //  g->Print("Plot/mcTruthCorrected.pdf");
+  //
+  //  auto h = new TCanvas();
+  //  h->SetLogy();
+  //  GetEfficiency()->Draw();
+  //  h->Print("Plot/efficiency.pdf");
+  //
+  //  auto i = new TCanvas();
+  //  i->SetLogy();
+  //  GetCorrectedSpectrum()->Draw();
+  //  i->Print("Plot/corrSpectrum.pdf");
 }

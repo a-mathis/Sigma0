@@ -10,9 +10,10 @@ int main(int argc, char* argv[]) {
   Plotter::SetStyle();
 
   auto filename = TString(argv[1]);
-  auto appendix = TString(argv[2]);
-  auto lambdaHist = FileReader::GetHist2D(filename, appendix, {{"V0_Lambda"}},
-                                          "fHistV0MassPt");
+  auto prefix = TString(argv[2]);
+  auto suffix = TString(argv[3]);
+  auto lambdaHist = FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                          {{"v0Cuts"}}, "InvMassPt", suffix);
   auto lambdaSpectrum = (TH1F*)lambdaHist->ProjectionY("lambdaSpectrum");
   lambdaSpectrum->GetXaxis()->SetTitle("M_{p#pi^{-}} (GeV/#it{c}^{2})");
   Plotter::SetStyleHisto(lambdaSpectrum);
@@ -20,7 +21,7 @@ int main(int argc, char* argv[]) {
   lambdaFitter.SetIntegralWidth(0.004);
 
   auto antiLambdaHist = FileReader::GetHist2D(
-      filename, appendix, {{"V0_AntiLambda"}}, "fHistV0MassPt");
+      filename, prefix, "Antiv0Cuts", {{"Antiv0Cuts"}}, "InvMassPt", suffix);
   auto antiLambdaSpectrum =
       (TH1F*)antiLambdaHist->ProjectionY("antiLambdaSpectrum");
   antiLambdaSpectrum->GetXaxis()->SetTitle(

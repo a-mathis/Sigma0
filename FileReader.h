@@ -18,7 +18,7 @@ class FileReader {
   /// \param histname name of the histogram
   /// \param prefix Name of the folder
   /// \return TH2F from the file
-  static TH2F *GetHist2D(TString filename, TString appendix,
+  static TH2F *GetHist2D(TString filename, TString appendix, TString dirName,
                          std::vector<TString> path, TString histname, TString prefix = "histo");
   /// Read a TH1F from the file
   /// \param filename Path to the file
@@ -27,7 +27,7 @@ class FileReader {
   /// \param histname name of the histogram
   /// \param prefix Name of the folder
   /// \return TH1F from the file
-  static TH1F *GetHist1D(TString filename, TString appendix,
+  static TH1F *GetHist1D(TString filename, TString appendix, TString dirName,
                          std::vector<TString> path, TString histname, TString prefix = "histo");
 
   /// Read a TProfile from the file
@@ -37,7 +37,7 @@ class FileReader {
   /// \param histname name of the histogram
   /// \param prefix Name of the folder
   /// \return TProfile from the file
-  static TProfile *GetProfile(TString filename, TString appendix,
+  static TProfile *GetProfile(TString filename, TString appendix, TString dirName,
                               std::vector<TString> path, TString histname, TString prefix = "histo");
 };
 #endif  // FileReader_H

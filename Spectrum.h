@@ -162,6 +162,10 @@ class Spectrum {
   TH1F* fCorrSpectrum;        ///< Efficiency-corrected pT spectrum
   TH1F* fEfficiency;          ///< Efficiency (fMCSpectrum/fMCTruth)
   TH1F* fTriggerEffHist;      ///< Histogram for trigger efficiency correction
+  TH1F* fRecMass;             ///< Reconstructed mean mass of the Sigma0
+  TH1F* fRecWidth;            ///< Reconstructed mass width of the Sigma0
+  TH1F* fMCMass;              ///< MC mean mass of the Sigma0
+  TH1F* fMCWidth;             ///< MC mass width of the Sigma0
   TString fAddendum;          ///< Addendum to the output file name
   double fTriggerEfficiency;  ///< Trigger efficiency
   double fTriggerEfficiencyErr;  ///< Error of the trigger efficiency

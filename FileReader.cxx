@@ -1,27 +1,30 @@
 #include "FileReader.h"
 
-TH2F* FileReader::GetHist2D(TString filename, TString appendix,
-                            std::vector<TString> path, TString histname, TString prefix) {
+TH2F* FileReader::GetHist2D(TString filename, TString appendix, TString dirName,
+                            std::vector<TString> path, TString histname,
+                            TString prefix) {
   auto file = TFile::Open(filename);
   if (!file) {
     std::cerr << "ERROR FileReader: File does not exist\n";
     return nullptr;
   }
-  TString name = "Sigma0_Femto_" + appendix;
+  TString name = prefix;
+  name += dirName;
+  name += appendix;
   auto dir = file->GetDirectory(name);
   if (!dir) {
     std::cerr << "ERROR FileReader: Directory does not exist\n";
     file->Close();
     return nullptr;
   }
-  name = prefix;
-  name += "_";
-  name += appendix;
   auto histoList = (TList*)dir->Get(name);
   TList* results = histoList;
-  for (const auto& it : path) {
-    results = (TList*)results->FindObject(it);
-  }
+//  std::cout << path.size() << "\n";
+//  if (path.size() > 0) {
+//    for (const auto& it : path) {
+//      results = (TList*)results->FindObject(it);
+//    }
+//  }
   if (!results) {
     std::cerr << "ERROR FileReader: List does not exist\n";
     file->Close();
@@ -38,28 +41,29 @@ TH2F* FileReader::GetHist2D(TString filename, TString appendix,
   return hist2D;
 }
 
-TH1F* FileReader::GetHist1D(TString filename, TString appendix,
-                            std::vector<TString> path, TString histname, TString prefix) {
+TH1F* FileReader::GetHist1D(TString filename, TString appendix, TString dirName,
+                            std::vector<TString> path, TString histname,
+                            TString prefix) {
   auto file = TFile::Open(filename);
   if (!file) {
     std::cerr << "ERROR FileReader: File does not exist\n";
     return nullptr;
   }
-  TString name = "Sigma0_Femto_" + appendix;
+  TString name = prefix;
+  name += dirName;
+  name += appendix;
   auto dir = file->GetDirectory(name);
   if (!dir) {
     std::cerr << "ERROR FileReader: Directory does not exist\n";
     file->Close();
     return nullptr;
   }
-  name = prefix;
-  name += "_";
-  name += appendix;
   auto histoList = (TList*)dir->Get(name);
+  histoList->ls();
   TList* results = histoList;
-  for (const auto& it : path) {
-    results = (TList*)results->FindObject(it);
-  }
+//  for (const auto& it : path) {
+//    results = (TList*)results->FindObject(it);
+//  }
   if (!results) {
     std::cerr << "ERROR FileReader: List does not exist\n";
     file->Close();
@@ -77,14 +81,16 @@ TH1F* FileReader::GetHist1D(TString filename, TString appendix,
 }
 
 TProfile* FileReader::GetProfile(TString filename, TString appendix,
-                                 std::vector<TString> path, TString histname, TString prefix) {
+                                 TString dirName, std::vector<TString> path,
+                                 TString histname, TString prefix) {
   auto file = TFile::Open(filename);
   if (!file) {
     std::cerr << "ERROR FileReader: File does not exist\n";
     file->Close();
     return nullptr;
   }
-  TString name = "Sigma0_Femto_" + appendix;
+  TString name = dirName;
+  name += appendix;
   auto dir = file->GetDirectory(name);
   if (!dir) {
     std::cerr << "ERROR FileReader: Directory does not exist\n";

@@ -7,25 +7,28 @@
 int main(int argc, char* argv[]) {
   Plotter::SetStyle();
   auto filename = TString(argv[1]);
-  auto appendix = TString(argv[2]);
+  auto prefix = TString(argv[2]);
+  auto suffix = TString(argv[3]);
 
   TString foldername = filename;
   foldername.ReplaceAll("AnalysisResults.root", "");
 
   // ========================================================================
   // Event properties
-  auto cutStats = FileReader::GetHist1D(
-      filename, appendix, {{"EventCuts", "AliEventCuts"}}, "fCutStats");
+  auto cutStats =
+      FileReader::GetHist1D(filename, prefix, "QA",
+                            {{"AliEventCuts", "AliEventCuts"}}, "fCutStats", suffix);
   Plotter::SetStyleHisto(cutStats, 24);
 
-  auto vtxZ = FileReader::GetHist1D(
-      filename, appendix, {{"EventCuts", "Event Cuts", "after"}}, "VtxZ_after");
+  auto vtxZ =
+      FileReader::GetHist1D(filename, prefix, "EvtCuts",
+                            {{"EvtCuts", "Evt Cuts", "after"}}, "VtxZ_after", suffix);
   vtxZ->SetTitle(";z_{vertex} (cm); Entries;");
   Plotter::SetStyleHisto(vtxZ, 0);
 
-  auto multRef08 = FileReader::GetHist1D(filename, appendix,
-                                         {{"EventCuts", "Event Cuts", "after"}},
-                                         "MultiplicityRef08_after");
+  auto multRef08 = FileReader::GetHist1D(filename, prefix, "EvtCuts",
+                                         {{"EvtCuts", "Event Cuts", "after"}},
+                                         "MultiplicityRef08_after", suffix);
   multRef08->SetTitle(";Ref08 multiplicity; Entries;");
   Plotter::SetStyleHisto(multRef08, 0);
 
@@ -46,35 +49,40 @@ int main(int argc, char* argv[]) {
   // ========================================================================
   // Proton properties
 
-  auto protonPt = FileReader::GetHist1D(
-      filename, appendix, {{"Proton", "after"}}, "pTDist_after", "femto");
+  auto protonPt =
+      FileReader::GetHist1D(filename, prefix, "TrackCuts",
+                            {{"TrackCuts", "after"}}, "pTDist_after", suffix);
   Plotter::SetStyleHisto(protonPt, 20);
   protonPt->SetTitle("; #it{p}_{T} (GeV/#it{c}); Entries;");
 
-  auto protonPhi = FileReader::GetHist1D(
-      filename, appendix, {{"Proton", "after"}}, "phiDist_after", "femto");
+  auto protonPhi =
+      FileReader::GetHist1D(filename, prefix, "TrackCuts",
+                            {{"TrackCuts", "after"}}, "phiDist_after", suffix);
   Plotter::SetStyleHisto(protonPhi, 20);
   protonPhi->SetTitle("; #varphi (rad); Entries;");
 
-  auto protonEta = FileReader::GetHist1D(
-      filename, appendix, {{"Proton", "after"}}, "EtaDist_after", "femto");
+  auto protonEta =
+      FileReader::GetHist1D(filename, prefix, "TrackCuts",
+                            {{"TrackCuts", "after"}}, "EtaDist_after", suffix);
   Plotter::SetStyleHisto(protonEta, 20);
   protonEta->SetTitle("; #eta; Entries;");
 
-  auto protonDCAxy =
-      (TH1F*)FileReader::GetHist2D(filename, appendix, {{"Proton", "after"}},
-                                   "DCAXY_after", "femto")
-          ->ProjectionY();
+  auto protonDCAxy = (TH1F*)FileReader::GetHist2D(
+                         filename, prefix, "TrackCuts",
+                         {{"TrackCuts", "after"}}, "DCAXY_after", suffix)
+                         ->ProjectionY();
   Plotter::SetStyleHisto(protonDCAxy, 20);
   protonDCAxy->SetTitle("; DCA_{xy} (cm); Entries;");
 
-  auto protonPIDTPC = FileReader::GetHist2D(
-      filename, appendix, {{"Proton", "after"}}, "NSigTPC_after", "femto");
+  auto protonPIDTPC =
+      FileReader::GetHist2D(filename, prefix, "TrackCuts",
+                            {{"TrackCuts", "after"}}, "NSigTPC_after", suffix);
   Plotter::SetStyleHisto(protonPIDTPC, 20);
   protonPIDTPC->SetTitle("PID p TPC; #it{p} (GeV/#it{c}); n_{#sigma} TPC");
 
-  auto protonPIDTOF = FileReader::GetHist2D(
-      filename, appendix, {{"Proton", "after"}}, "NSigTOF_after", "femto");
+  auto protonPIDTOF =
+      FileReader::GetHist2D(filename, prefix, "TrackCuts",
+                            {{"TrackCuts", "after"}}, "NSigTOF_after", suffix);
   Plotter::SetStyleHisto(protonPIDTOF, 20);
   protonPIDTOF->SetTitle("PID p TOF; #it{p} (GeV/#it{c}); n_{#sigma} TOF");
 
@@ -113,7 +121,7 @@ int main(int argc, char* argv[]) {
 
   // Inv. mass vs. pT
   auto photonInvMassPt = FileReader::GetHist2D(
-      filename, appendix, {{"V0_Photon"}}, "fHistV0MassPt");
+      filename, prefix, "PhotonCuts", {{"PhotonCuts"}}, "InvMassPt", suffix);
   Plotter::SetStyleHisto(photonInvMassPt, 20);
   auto photonInvMass = (TH1F*)photonInvMassPt->ProjectionY();
   Plotter::SetStyleHisto(photonInvMass, 20);
@@ -123,8 +131,8 @@ int main(int argc, char* argv[]) {
   photonPt->SetTitle("; #it{p}_{T} (GeV/#it{c}); Entries;");
 
   // Eta & phi
-  auto photonEtaPhi =
-      FileReader::GetHist2D(filename, appendix, {{"V0_Photon"}}, "fHistEtaPhi");
+  auto photonEtaPhi = FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                                            {{"PhotonCuts"}}, "fHistEtaPhi", suffix);
   Plotter::SetStyleHisto(photonEtaPhi, 20);
   auto photonPhi = (TH1F*)photonEtaPhi->ProjectionY();
   Plotter::SetStyleHisto(photonPhi, 20);
@@ -134,89 +142,92 @@ int main(int argc, char* argv[]) {
   photonEta->SetTitle("; #eta; Entries;");
 
   // Inv. mass under K0 hypothesis
-  auto photonK0 =
-      FileReader::GetHist1D(filename, appendix, {{"V0_Photon"}}, "fHistK0Mass");
+  auto photonK0 = FileReader::GetHist1D(filename, prefix, "PhotonCuts",
+                                        {{"PhotonCuts"}}, "fHistK0Mass", suffix);
   Plotter::SetStyleHisto(photonK0, 20);
   photonK0->SetTitle(";M_{#pi^{+}#pi^{-}} (GeV/#it{c}^{2}); Entries;");
 
   // Inv. mass under Lambda hypothesis
-  auto photonLambda = FileReader::GetHist1D(filename, appendix, {{"V0_Photon"}},
-                                            "fHistLambdaMass");
+  auto photonLambda = FileReader::GetHist1D(
+      filename, prefix, "PhotonCuts", {{"PhotonCuts"}}, "fHistLambdaMass", suffix);
   Plotter::SetStyleHisto(photonLambda, 20);
   photonLambda->SetTitle(";M_{p#pi^{-}} (GeV/#it{c}^{2}); Entries;");
 
   // Inv. mass under Anti-Lambda hypothesis
-  auto photonAntiLambda = FileReader::GetHist1D(
-      filename, appendix, {{"V0_Photon"}}, "fHistAntiLambdaMass");
+  auto photonAntiLambda =
+      FileReader::GetHist1D(filename, prefix, "PhotonCuts", {{"PhotonCuts"}},
+                            "fHistAntiLambdaMass", suffix);
   Plotter::SetStyleHisto(photonAntiLambda, 20);
   photonAntiLambda->SetTitle(";M_{#bar{p}#pi^{+}} (GeV/#it{c}^{2}); Entries;");
 
   // Psi pair
-  auto photonPsiPair = (TH1F*)FileReader::GetHist2D(
-                           filename, appendix, {{"V0_Photon"}}, "fHistPsiPair")
-                           ->ProjectionY();
+  auto photonPsiPair =
+      (TH1F*)FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                                   {{"PhotonCuts"}}, "fHistPsiPair", suffix)
+          ->ProjectionY();
   Plotter::SetStyleHisto(photonPsiPair, 20);
   photonPsiPair->SetTitle(";#Psi_{pair}; Entries;");
 
   // Transverse radius
-  auto photonR =
-      (TH1F*)FileReader::GetHist2D(filename, appendix, {{"V0_Photon", "After"}},
-                                   "fHistTransverseRadiusAfter")
-          ->ProjectionY();
+  auto photonR = (TH1F*)FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                                              {{"PhotonCuts", "After"}},
+                                              "fHistTransverseRadiusAfter", suffix)
+                     ->ProjectionY();
   Plotter::SetStyleHisto(photonR, 20);
   photonR->SetTitle(";#it{r}_{xy} (cm); Entries;");
 
   // Cosine pointing angle
   auto photonCPA =
-      (TH1F*)FileReader::GetHist2D(filename, appendix, {{"V0_Photon", "After"}},
-                                   "fHistCosPAAfter")
+      (TH1F*)FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                                   {{"PhotonCuts", "After"}}, "fHistCosPAAfter", suffix)
           ->ProjectionY();
   Plotter::SetStyleHisto(photonCPA, 20);
   photonCPA->SetTitle(";cos(#alpha); Entries;");
 
   // DCA daughters at the decay vertex
-  auto photonDCA =
-      (TH1F*)FileReader::GetHist2D(filename, appendix, {{"V0_Photon", "After"}},
-                                   "fHistDCADaughtersAfter")
-          ->ProjectionY();
+  auto photonDCA = (TH1F*)FileReader::GetHist2D(
+                       filename, prefix, "PhotonCuts",
+                       {{"PhotonCuts", "After"}}, "fHistDCADaughtersAfter", suffix)
+                       ->ProjectionY();
   Plotter::SetStyleHisto(photonDCA, 20);
   photonDCA->SetTitle("; DCA(e^{+}e^{-}) (cm); Entries;");
 
   // DCA pos. daughter / PV
   auto photonDCAPosPV =
-      (TH1F*)FileReader::GetHist2D(filename, appendix,
-                                   {{"V0_Photon", "V0_PosDaughter"}},
-                                   "fHistSingleParticleDCAtoPVAfter_pos")
+      (TH1F*)FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                                   {{"PhotonCuts", "V0_PosDaughter"}},
+                                   "fHistSingleParticleDCAtoPVAfter_pos", suffix)
           ->ProjectionY();
   Plotter::SetStyleHisto(photonDCAPosPV, 20);
   photonDCAPosPV->SetTitle("; DCA(e^{+} PV) (cm); Entries;");
 
   // Armenteros
-  auto photonArmenteros = FileReader::GetHist2D(
-      filename, appendix, {{"V0_Photon", "After"}}, "fHistArmenterosAfter");
+  auto photonArmenteros =
+      FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                            {{"PhotonCuts", "After"}}, "fHistArmenterosAfter", suffix);
   photonArmenteros->SetTitle("Armenteros-Podolandski");
   Plotter::SetStyleHisto(photonArmenteros, 20);
 
   // PID pos. daughter
-  auto photonPIDPos = FileReader::GetHist2D(filename, appendix,
-                                            {{"V0_Photon", "V0_PosDaughter"}},
-                                            "fHistSingleParticlePID_pos");
+  auto photonPIDPos = FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                                            {{"PhotonCuts", "V0_PosDaughter"}},
+                                            "fHistSingleParticlePID_pos", suffix);
   photonPIDPos->SetTitle("PID e^{+}");
   Plotter::SetStyleHisto(photonPIDPos, 20);
 
   // DCA en. daughter / PV
   auto photonDCANegPV =
-      (TH1F*)FileReader::GetHist2D(filename, appendix,
-                                   {{"V0_Photon", "V0_NegDaughter"}},
-                                   "fHistSingleParticleDCAtoPVAfter_neg")
+      (TH1F*)FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                                   {{"PhotonCuts", "V0_NegDaughter"}},
+                                   "fHistSingleParticleDCAtoPVAfter_neg", suffix)
           ->ProjectionY();
   Plotter::SetStyleHisto(photonDCANegPV, 20);
   photonDCANegPV->SetTitle("; DCA(e^{-} PV) (cm); Entries;");
 
   // PID neg. daughter
-  auto photonPIDNeg = FileReader::GetHist2D(filename, appendix,
-                                            {{"V0_Photon", "V0_NegDaughter"}},
-                                            "fHistSingleParticlePID_neg");
+  auto photonPIDNeg = FileReader::GetHist2D(filename, prefix, "PhotonCuts",
+                                            {{"PhotonCuts", "V0_NegDaughter"}},
+                                            "fHistSingleParticlePID_neg", suffix);
   photonPIDNeg->SetTitle("PID e^{-}");
   Plotter::SetStyleHisto(photonPIDNeg, 20);
 
@@ -304,8 +315,8 @@ int main(int argc, char* argv[]) {
   // Lambda properties
 
   // Inv. mass vs. pT
-  auto lambdaInvMassPt = FileReader::GetHist2D(
-      filename, appendix, {{"V0_Lambda"}}, "fHistV0MassPt");
+  auto lambdaInvMassPt = FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                               {{"v0Cuts"}}, "fHistV0MassPt", suffix);
   Plotter::SetStyleHisto(lambdaInvMassPt, 20);
   auto lambdaInvMass = (TH1F*)lambdaInvMassPt->ProjectionY();
   Plotter::SetStyleHisto(lambdaInvMass, 20);
@@ -315,8 +326,8 @@ int main(int argc, char* argv[]) {
   lambdaPt->SetTitle("; #it{p}_{T} (GeV/#it{c}); Entries;");
 
   // Eta & phi
-  auto lambdaEtaPhi =
-      FileReader::GetHist2D(filename, appendix, {{"V0_Lambda"}}, "fHistEtaPhi");
+  auto lambdaEtaPhi = FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                            {{"v0Cuts"}}, "fHistEtaPhi", suffix);
   Plotter::SetStyleHisto(lambdaEtaPhi, 20);
   auto lambdaPhi = (TH1F*)lambdaEtaPhi->ProjectionY();
   Plotter::SetStyleHisto(lambdaPhi, 20);
@@ -326,76 +337,77 @@ int main(int argc, char* argv[]) {
   lambdaEta->SetTitle("; #eta; Entries;");
 
   // Inv. mass under K0 hypothesis
-  auto lambdaK0 =
-      FileReader::GetHist1D(filename, appendix, {{"V0_Lambda"}}, "fHistK0Mass");
+  auto lambdaK0 = FileReader::GetHist1D(filename, prefix, "v0Cuts",
+                                        {{"v0Cuts"}}, "fHistK0Mass", suffix);
   Plotter::SetStyleHisto(lambdaK0, 20);
   lambdaK0->SetTitle(";M_{#pi^{+}#pi^{-}} (GeV/#it{c}^{2}); Entries;");
 
   // Inv. mass under Anti-Lambda hypothesis
   auto lambdaAntiLambda = FileReader::GetHist1D(
-      filename, appendix, {{"V0_Lambda"}}, "fHistAntiLambdaMass");
+      filename, prefix, "v0Cuts", {{"v0Cuts"}}, "fHistAntiLambdaMass", suffix);
   Plotter::SetStyleHisto(lambdaAntiLambda, 20);
   lambdaAntiLambda->SetTitle(";M_{#bar{p}#pi^{+}} (GeV/#it{c}^{2}); Entries;");
 
   // Transverse radius
-  auto lambdaR =
-      (TH1F*)FileReader::GetHist2D(filename, appendix, {{"V0_Lambda", "After"}},
-                                   "fHistTransverseRadiusAfter")
-          ->ProjectionY();
+  auto lambdaR = (TH1F*)FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                              {{"v0Cuts", "After"}},
+                                              "fHistTransverseRadiusAfter")
+                     ->ProjectionY();
   Plotter::SetStyleHisto(lambdaR, 20);
   lambdaR->SetTitle(";#it{r}_{xy} (cm); Entries;");
 
   // Cosine pointing angle
   auto lambdaCPA =
-      (TH1F*)FileReader::GetHist2D(filename, appendix, {{"V0_Lambda", "After"}},
-                                   "fHistCosPAAfter")
+      (TH1F*)FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                   {{"v0Cuts", "After"}}, "fHistCosPAAfter", suffix)
           ->ProjectionY();
   Plotter::SetStyleHisto(lambdaCPA, 20);
   lambdaCPA->SetTitle(";cos(#alpha); Entries;");
 
   // DCA daughters at the decay vertex
-  auto lambdaDCA =
-      (TH1F*)FileReader::GetHist2D(filename, appendix, {{"V0_Lambda", "After"}},
-                                   "fHistDCADaughtersAfter")
-          ->ProjectionY();
+  auto lambdaDCA = (TH1F*)FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                                {{"v0Cuts", "After"}},
+                                                "fHistDCADaughtersAfter", suffix)
+                       ->ProjectionY();
   Plotter::SetStyleHisto(lambdaDCA, 20);
   lambdaDCA->SetTitle("; DCA(p #pi^{-}) (cm); Entries;");
 
   // DCA pos. daughter / PV
   auto lambdaDCAPosPV =
-      (TH1F*)FileReader::GetHist2D(filename, appendix,
-                                   {{"V0_Lambda", "V0_PosDaughter"}},
-                                   "fHistSingleParticleDCAtoPVAfter_pos")
+      (TH1F*)FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                   {{"v0Cuts", "V0_PosDaughter"}},
+                                   "fHistSingleParticleDCAtoPVAfter_pos", suffix)
           ->ProjectionY();
   Plotter::SetStyleHisto(lambdaDCAPosPV, 20);
   lambdaDCAPosPV->SetTitle("; DCA(p PV) (cm); Entries;");
 
   // Armenteros
-  auto lambdaArmenteros = FileReader::GetHist2D(
-      filename, appendix, {{"V0_Lambda", "After"}}, "fHistArmenterosAfter");
+  auto lambdaArmenteros =
+      FileReader::GetHist2D(filename, prefix, "v0Cuts", {{"v0Cuts", "After"}},
+                            "fHistArmenterosAfter", suffix);
   lambdaArmenteros->SetTitle("Armenteros-Podolandski");
   Plotter::SetStyleHisto(lambdaArmenteros, 20);
 
   // PID pos. daughter
-  auto lambdaPIDPos = FileReader::GetHist2D(filename, appendix,
-                                            {{"V0_Lambda", "V0_PosDaughter"}},
-                                            "fHistSingleParticlePID_pos");
+  auto lambdaPIDPos = FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                            {{"v0Cuts", "V0_PosDaughter"}},
+                                            "fHistSingleParticlePID_pos", suffix);
   lambdaPIDPos->SetTitle("PID p");
   Plotter::SetStyleHisto(lambdaPIDPos, 20);
 
   // DCA en. daughter / PV
   auto lambdaDCANegPV =
-      (TH1F*)FileReader::GetHist2D(filename, appendix,
-                                   {{"V0_Lambda", "V0_NegDaughter"}},
-                                   "fHistSingleParticleDCAtoPVAfter_neg")
+      (TH1F*)FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                   {{"v0Cuts", "V0_NegDaughter"}},
+                                   "fHistSingleParticleDCAtoPVAfter_neg", suffix)
           ->ProjectionY();
   Plotter::SetStyleHisto(lambdaDCANegPV, 20);
   lambdaDCANegPV->SetTitle("; DCA(#pi^{-} PV) (cm); Entries;");
 
   // PID neg. daughter
-  auto lambdaPIDNeg = FileReader::GetHist2D(filename, appendix,
-                                            {{"V0_Lambda", "V0_NegDaughter"}},
-                                            "fHistSingleParticlePID_neg");
+  auto lambdaPIDNeg = FileReader::GetHist2D(filename, prefix, "v0Cuts",
+                                            {{"v0Cuts", "V0_NegDaughter"}},
+                                            "fHistSingleParticlePID_neg", suffix);
   lambdaPIDNeg->SetTitle("PID #pi^{-}");
   Plotter::SetStyleHisto(lambdaPIDNeg, 20);
 
@@ -472,12 +484,12 @@ int main(int argc, char* argv[]) {
   // Sigma0 properties
 
   // Inv. mass vs. pT
-  auto sigmaInvMassPt =
-      FileReader::GetHist2D(filename, appendix, {{"Sigma0"}}, "fHistInvMassPt");
+  auto sigmaInvMassPt = FileReader::GetHist2D(
+      filename, prefix, "Sigma0Cuts", {{"Sigma0Cuts"}}, "fHistInvMassPt", suffix);
   Plotter::SetStyleHisto(sigmaInvMassPt, 20);
   sigmaInvMassPt->GetYaxis()->SetRangeUser(1.1, 1.25);
-  auto sigmaInvMass =
-      FileReader::GetHist1D(filename, appendix, {{"Sigma0"}}, "fHistInvMass");
+  auto sigmaInvMass = FileReader::GetHist1D(filename, prefix, "Sigma0Cuts",
+                                            {{"Sigma0Cuts"}}, "fHistInvMass", suffix);
   Plotter::SetStyleHisto(sigmaInvMass, 20);
   sigmaInvMass->SetTitle(";M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries;");
   sigmaInvMass->GetXaxis()->SetRangeUser(1.1, 1.25);
@@ -486,8 +498,8 @@ int main(int argc, char* argv[]) {
   sigmaPt->SetTitle("; #it{p}_{T} (GeV/#it{c}); Entries;");
 
   // Eta & phi
-  auto sigmaEtaPhi =
-      FileReader::GetHist2D(filename, appendix, {{"Sigma0"}}, "fHistEtaPhi");
+  auto sigmaEtaPhi = FileReader::GetHist2D(filename, prefix, "Sigma0Cuts",
+                                           {{"Sigma0Cuts"}}, "fHistEtaPhi", suffix);
   Plotter::SetStyleHisto(sigmaEtaPhi, 20);
   auto sigmaPhi = (TH1F*)sigmaEtaPhi->ProjectionY();
   Plotter::SetStyleHisto(sigmaPhi, 20);
@@ -497,25 +509,25 @@ int main(int argc, char* argv[]) {
   sigmaEta->SetTitle("; #eta; Entries;");
 
   // Number of Sigma
-  auto NSigma =
-      FileReader::GetHist1D(filename, appendix, {{"Sigma0"}}, "fHistNSigma");
+  auto NSigma = FileReader::GetHist1D(filename, prefix, "Sigma0Cuts",
+                                      {{"Sigma0Cuts"}}, "fHistNSigma", suffix);
   Plotter::SetStyleHisto(NSigma, 20);
   NSigma->SetTitle("; Number of #Sigma^{0} candidates / event; Entries;");
 
   // Photon and Lambda Cleaner
-  auto NGammaBefore = FileReader::GetHist1D(filename, appendix, {{"Sigma0"}},
-                                            "fHistNPhotonBefore");
+  auto NGammaBefore = FileReader::GetHist1D(
+      filename, prefix, "Sigma0Cuts", {{"Sigma0Cuts"}}, "fHistNPhotonBefore", suffix);
   Plotter::SetStyleHisto(NGammaBefore, 20);
-  auto NGammaAfter = FileReader::GetHist1D(filename, appendix, {{"Sigma0"}},
-                                           "fHistNPhotonAfter");
+  auto NGammaAfter = FileReader::GetHist1D(
+      filename, prefix, "Sigma0Cuts", {{"Sigma0Cuts"}}, "fHistNPhotonAfter", suffix);
   Plotter::SetStyleHisto(NGammaAfter, 20, kRed + 2);
   NGammaBefore->SetTitle("; Number of #gamma candidates / event; Entries;");
 
-  auto NLambdaBefore = FileReader::GetHist1D(filename, appendix, {{"Sigma0"}},
-                                             "fHistNLambdaBefore");
+  auto NLambdaBefore = FileReader::GetHist1D(
+      filename, prefix, "Sigma0Cuts", {{"Sigma0Cuts"}}, "fHistNLambdaBefore", suffix);
   Plotter::SetStyleHisto(NLambdaBefore, 20);
-  auto NLambdaAfter = FileReader::GetHist1D(filename, appendix, {{"Sigma0"}},
-                                            "fHistNLambdaAfter");
+  auto NLambdaAfter = FileReader::GetHist1D(
+      filename, prefix, "Sigma0Cuts", {{"Sigma0Cuts"}}, "fHistNLambdaAfter", suffix);
   Plotter::SetStyleHisto(NLambdaAfter, 20, kRed + 2);
   NLambdaBefore->SetTitle("; Number of #Lambda candidates / event; Entries;");
 
@@ -555,12 +567,13 @@ int main(int argc, char* argv[]) {
   // Anti-Sigma0 properties
 
   // Inv. mass vs. pT
-  auto antiSigmaInvMassPt = FileReader::GetHist2D(
-      filename, appendix, {{"AntiSigma0"}}, "fHistInvMassPt");
+  auto antiSigmaInvMassPt =
+      FileReader::GetHist2D(filename, prefix, "AntiSigmaCuts",
+                            {{"AntiSigmaCuts"}}, "fHistInvMassPt", suffix);
   Plotter::SetStyleHisto(antiSigmaInvMassPt, 20);
   antiSigmaInvMassPt->GetYaxis()->SetRangeUser(1.1, 1.25);
   auto antiSigmaInvMass = FileReader::GetHist1D(
-      filename, appendix, {{"AntiSigma0"}}, "fHistInvMass");
+      filename, prefix, "AntiSigmaCuts", {{"AntiSigmaCuts"}}, "fHistInvMass", suffix);
   Plotter::SetStyleHisto(antiSigmaInvMass, 20);
   antiSigmaInvMass->SetTitle(
       ";M_{#bar{#Lambda}#gamma} (GeV/#it{c}^{2}); Entries;");
@@ -570,8 +583,8 @@ int main(int argc, char* argv[]) {
   antiSigmaPt->SetTitle("; #it{p}_{T} (GeV/#it{c}); Entries;");
 
   // Eta & phi
-  auto antiSigmaEtaPhi = FileReader::GetHist2D(filename, appendix,
-                                               {{"AntiSigma0"}}, "fHistEtaPhi");
+  auto antiSigmaEtaPhi = FileReader::GetHist2D(
+      filename, prefix, "AntiSigmaCuts", {{"AntiSigmaCuts"}}, "fHistEtaPhi", suffix);
   Plotter::SetStyleHisto(antiSigmaEtaPhi, 20);
   auto antiSigmaPhi = (TH1F*)antiSigmaEtaPhi->ProjectionY();
   Plotter::SetStyleHisto(antiSigmaPhi, 20);
@@ -581,26 +594,30 @@ int main(int argc, char* argv[]) {
   antiSigmaEta->SetTitle("; #eta; Entries;");
 
   // Number of Sigma
-  auto NAntiSigma = FileReader::GetHist1D(filename, appendix, {{"AntiSigma0"}},
-                                          "fHistNSigma");
+  auto NAntiSigma = FileReader::GetHist1D(filename, prefix, "AntiSigmaCuts",
+                                          {{"AntiSigmaCuts"}}, "fHistNSigma", suffix);
   Plotter::SetStyleHisto(NAntiSigma, 20);
   NAntiSigma->SetTitle(
       "; Number of #bar{#Sigma^{0}} candidates / event; Entries;");
 
   // Photon and Lambda Cleaner
-  auto NGammaAntiBefore = FileReader::GetHist1D(
-      filename, appendix, {{"AntiSigma0"}}, "fHistNPhotonBefore");
+  auto NGammaAntiBefore =
+      FileReader::GetHist1D(filename, prefix, "AntiSigmaCuts",
+                            {{"AntiSigmaCuts"}}, "fHistNPhotonBefore", suffix);
   Plotter::SetStyleHisto(NGammaAntiBefore, 20);
-  auto NGammaAntiAfter = FileReader::GetHist1D(
-      filename, appendix, {{"AntiSigma0"}}, "fHistNPhotonAfter");
+  auto NGammaAntiAfter =
+      FileReader::GetHist1D(filename, prefix, "AntiSigmaCuts",
+                            {{"AntiSigmaCuts"}}, "fHistNPhotonAfter", suffix);
   Plotter::SetStyleHisto(NGammaAntiAfter, 20, kRed + 2);
   NGammaAntiBefore->SetTitle("; Number of #gamma candidates / event; Entries;");
 
-  auto NLambdaAntiBefore = FileReader::GetHist1D(
-      filename, appendix, {{"AntiSigma0"}}, "fHistNLambdaBefore");
+  auto NLambdaAntiBefore =
+      FileReader::GetHist1D(filename, prefix, "AntiSigmaCuts",
+                            {{"AntiSigmaCuts"}}, "fHistNLambdaBefore", suffix);
   Plotter::SetStyleHisto(NLambdaAntiBefore, 20);
-  auto NLambdaAntiAfter = FileReader::GetHist1D(
-      filename, appendix, {{"AntiSigma0"}}, "fHistNLambdaAfter");
+  auto NLambdaAntiAfter =
+      FileReader::GetHist1D(filename, prefix, "AntiSigmaCuts",
+                            {{"AntiSigmaCuts"}}, "fHistNLambdaAfter", suffix);
   Plotter::SetStyleHisto(NLambdaAntiAfter, 20, kRed + 2);
   NLambdaAntiBefore->SetTitle(
       "; Number of #bar{#Lambda} candidates / event; Entries;");
@@ -662,17 +679,18 @@ int main(int argc, char* argv[]) {
   // ========================================================================
   // Track cleaner
 
-  auto cleaner_pp = FileReader::GetHist1D(filename, appendix, {{"PairCleaner"}},
-                                          "DaugthersSharedTracks_0", "femto");
+  auto cleaner_pp =
+      FileReader::GetHist1D(filename, prefix, "fixme", {{"PairCleaner"}},
+                            "DaugthersSharedTracks_0", suffix);
   auto cleaner_apap =
-      FileReader::GetHist1D(filename, appendix, {{"PairCleaner"}},
-                            "DaugthersSharedTracks_1", "femto");
+      FileReader::GetHist1D(filename, prefix, "fixme", {{"PairCleaner"}},
+                            "DaugthersSharedTracks_1", suffix);
   auto cleaner_pSigma0 =
-      FileReader::GetHist1D(filename, appendix, {{"PairCleaner"}},
-                            "DaugthersSharedTracks_2", "femto");
+      FileReader::GetHist1D(filename, prefix, "fixme", {{"PairCleaner"}},
+                            "DaugthersSharedTracks_2", suffix);
   auto cleaner_apaSigma0 =
-      FileReader::GetHist1D(filename, appendix, {{"PairCleaner"}},
-                            "DaugthersSharedTracks_3", "femto");
+      FileReader::GetHist1D(filename, prefix, "fixme", {{"PairCleaner"}},
+                            "DaugthersSharedTracks_3", suffix);
   Plotter::SetStyleHisto(cleaner_pp, 20);
   cleaner_pp->SetTitle("; p-p pairs with shared tracks; Entries;");
   Plotter::SetStyleHisto(cleaner_apap, 20);

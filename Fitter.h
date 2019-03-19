@@ -14,6 +14,7 @@ class Fitter {
   ~Fitter();
   void FitLambda();
   void FitSigma();
+  void FitSigma(int pTBin);
 
   TF1 *GetTotalFit() const { return fTotalFit; }
   TF1 *GetSignalFit() const { return fSignal; }

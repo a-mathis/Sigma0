@@ -9,13 +9,13 @@ int main(int argc, char* argv[]) {
   Plotter::SetStyle();
 
   auto filename = TString(argv[1]);
-  auto appendix = TString(argv[2]);
-  auto sigmaHist =
-      FileReader::GetHist2D(filename, appendix, {{"Sigma0"}}, "fHistInvMassPt");
+  auto prefix = TString(argv[2]);
+  auto suffix = TString(argv[3]);
+  auto sigmaHist = FileReader::GetHist2D(filename, prefix, "Sigma0Cuts", {{}}, "fHistInvMassPtRaw", suffix);
   auto sigmaSpectrum = (TH1F*)sigmaHist->ProjectionY("sigmaSpectrum");
 
   auto antisigmaHist = FileReader::GetHist2D(
-      filename, appendix, {{"AntiSigma0"}}, "fHistInvMassPt");
+      filename, prefix, "AntiSigmaCuts", {{}}, "fHistInvMassPtRaw", suffix);
   auto antisigmaSpectrum =
       (TH1F*)antisigmaHist->ProjectionY("antisigmaSpectrum");
 
@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
   sigmaFitter.SetSpectrum(sigmaSpectrum);
 
   // Histogram for Sigma0 Integral width
-  auto histSigmaCuts = FileReader::GetHist1D(filename, appendix, {{"Sigma0"}},
-                                             "fHistCutBooking");
+  auto histSigmaCuts = FileReader::GetHist1D(
+      filename, prefix, "Sigma0Cuts", {{}}, "fHistCutBooking", suffix);
   const float intervalWidth = histSigmaCuts->GetBinContent(1);
   sigmaFitter.SetIntegralWidth(intervalWidth);
 
